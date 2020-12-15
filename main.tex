@@ -1,0 +1,132 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{todonotes}
+
+\newcommand{\tristan}[1]{\color{orange}\textbf{From Tristan:}#1\color{black}}
+
+
+\title{PyTracer: Detecting numerical instabilities in Python using Monte Carlo Arithmetic \tristan{title sounds like PyTracer is an MCA tool, emphasis should be put on comparing MCA traces. ``without instrumentation" or ``automatic" could also appear in the title.}}
+\author{}
+\date{November 2020}
+
+\usepackage{natbib}
+\usepackage{graphicx}
+
+\newcommand{\Yohan}[1]{
+\todo[inline,backgroundcolor=green]{YC: #1}
+}
+
+\begin{document}
+
+\maketitle
+
+\section{Introduction}
+\begin{itemize}
+    \item Numerical instabilities are inherent to HPC applications \tristan{not only to HPC, also software updates, small perturbations in parameters or data}
+    \item Neuroimaging tools are facing reproducibility issues, one factor of which is numerical stability \tristan{neuroimaging should be an illustration, your intro should rather focus on Python in general, it's much more impactful} 
+    \item Detecting those instabilities is challenging: large data sets, large pipeline, long computation time, complex physics \tristan{Here you could illustrate the point with neuroimaging pipelines}
+    \item Needs tools for automatically detecting these instabilities
+    \item Needs tools to quickly identify unstable functions among large number of calls
+\end{itemize}
+
+\subsection{Contributions}
+\begin{itemize}
+    \item Pytracer, a tool to automatically instrument Python functions 
+    to trace their inputs and outputs fidelity over time
+    \item A visualizer that allows visualizing large traces 
+    \item A graph-based summary view to easily identify numerically unstable functions 
+    \item \tristan{An evaluation of the above tools on Scipy libraries}
+\end{itemize}
+
+\section{Motivating example}
+\Yohan{Find motivating example}
+\tristan{Could be Greg's pipeline and paper}
+
+\section{Background}
+\subsection{Monte Carlo Arithmetic}
+\begin{itemize}
+    \item Simulation of roundoff errors and cancellations
+    \item Virtual precision to simulate any working precision
+    \item A formula to compute the number of significant digits, extended with Confidence Interval for Stochastic Arithmetic
+\end{itemize}
+\subsection{Fuzzy environment}
+\begin{itemize}
+    \item Python environment using MCA
+    \item Transparent for the user, no recompilation needed
+    \item Extensible with modules using MCA like numpy
+\end{itemize}
+
+\subsection{Tracing tools}
+\begin{itemize}
+    \item Veritracer
+    \item CADNA
+    \item CraftHPC
+    \item FpDebug
+    \item Herbgrind
+    \item \Yohan{Missed other tools, read literature}
+\end{itemize}
+
+\section{Design principles}
+
+\subsection{Pytracer workflow}
+
+\Yohan{Add figure for the workflow}
+
+\begin{itemize}
+    \item Trace application
+    \item Merge traces
+    \item Visualize trace
+\end{itemize}
+
+\subsection{Instrumentation}
+Pytracer dynamically instruments the Python module selected by the user 
+without intervention required by the user.
+Special attributes of the form \texttt{\_\_*\_\_} are not wrapped.
+
+\subsubsection{Functions' module \tristan{Module functions?}}
+\begin{itemize}
+    \item Iterates over Python's modules selected by the user.
+    \item Dynamically compiles a wrapper for each function thanks to \texttt{compile} builtin function.
+    \item Replace original function by its wrapper counterpart.
+\end{itemize}
+\subsubsection{Class instances}
+    Some class forbid overwriting attributes of their instances \tristan{why do you need to edit attributes and not just functions?}.
+The solution consisting in replacing function by a wrapper cannot be applied here.
+\begin{itemize}
+    \item Class is not a base type, i.e. can be inherited, we create a new class from the original class by filling its namespace with the callable attributes being replaced by their wrapper counterpart.
+    \item Class is a base type, as for \texttt{numpy ufunc}, no 
+    general solution can be provided since heritage is forbidden.
+    Solutions on a case-by-case basis are provided. 
+    \item \texttt{numpy.frompyfunc} can cause errors since signature is not preserved. The function wrapped with this technique always returns \texttt{Python Object} that cause \texttt{TypeError} when the numpy array
+    over witch the function is applied is used for indexing another array.
+    Tracing \texttt{ufunc} instances can be disabled by the user.
+\end{itemize}
+
+
+\subsection{Visualization}
+
+\subsubsection{Plotly}
+
+
+\section{Methodology \tristan{not the right title: design is part of the methodology. I feel that "running applications with fuzzy environment" will overlap quite a  bit with 3.2. You could just move "detecting instabilities" to section 4 and forget about this section.}}
+\subsection{Running application within Fuzzy environment}
+\subsection{Detecting instabilities}
+
+
+\section{Use cases}
+
+\subsection{Numpy}
+\subsection{Scikit learn}
+\subsection{Dipy}
+
+\section{Performance evaluation}
+\subsection{Overhead}
+\subsection{Postprocessing}
+
+\section{Discussion}
+
+\section{Conclusion}
+
+\bibliographystyle{plain}
+\bibliography{references}
+\end{document}
